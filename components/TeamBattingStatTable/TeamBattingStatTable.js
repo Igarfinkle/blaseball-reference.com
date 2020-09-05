@@ -5,9 +5,10 @@ import NextLink from "next/link";
 import Table from "components/Table";
 import { Tooltip } from "@chakra-ui/core";
 
-export default function TeamPitchingStatTable({
+export default function TeamBattingStatTable({
   isPostseason = false,
   battingStats,
+  season,
 }) {
   if (
     !battingStats ||
@@ -26,15 +27,17 @@ export default function TeamPitchingStatTable({
       ? battingStats.postseasons
       : battingStats.seasons;
 
-    const mostRecentSeason = Object.keys(seasons).sort().pop();
+    if (!season) {
+      const season = Object.keys(seasons).sort().pop();
+    }
 
-    return seasons[mostRecentSeason].map((player) => {
+    return seasons[season].map((player) => {
       return {
         ...player,
-        season: mostRecentSeason,
+        season,
       };
     });
-  }, []);
+  }, [season]);
 
   const columns = React.useMemo(
     () =>

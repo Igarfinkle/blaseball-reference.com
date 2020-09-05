@@ -1,9 +1,10 @@
 import apiFetcher from "lib/api-fetcher";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 import BattingStatTable from "components/BattingStatTable";
-import { Box, Heading, Text } from "@chakra-ui/core";
+import { Box, Heading, Select, Text } from "@chakra-ui/core";
 import ErrorPage from "next/error";
 import Head from "next/head";
 import Layout from "components/Layout";
@@ -24,11 +25,8 @@ export default function PlayerPage(props) {
     apiFetcher,
     {
       initialData: props.battingStats,
-      onErrorRetry: (error, key, option, revalidate, { retryCount }) => {
-        if (error.status === 403 || error.status === 404) return;
-        if (retryCount >= 10) return;
-        setTimeout(() => revalidate({ retryCount: retryCount + 1 }), 5000);
-      },
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
     }
   );
   const { data: pitchingStats, error: pitchingStatsError } = useSWR(
@@ -36,11 +34,8 @@ export default function PlayerPage(props) {
     apiFetcher,
     {
       initialData: props.pitchingStats,
-      onErrorRetry: (error, key, option, revalidate, { retryCount }) => {
-        if (error.status === 403 || error.status === 404) return;
-        if (retryCount >= 10) return;
-        setTimeout(() => revalidate({ retryCount: retryCount + 1 }), 5000);
-      },
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
     }
   );
 
@@ -146,18 +141,26 @@ function PlayerStats({
   pitchingStats,
   pitchingStatsError,
 }) {
+  if (!battingStats && !pitchingStats) {
+    return null;
+  }
+
   return (
     <>
+      <Heading as="h2" mb={4} size="md">
+        Player Stats
+      </Heading>
+
       {pitchingStats && !pitchingStatsError ? (
         <Box my={4}>
-          <Heading as="h2" size="md">
+          <Heading as="h3" size="md">
             Standard Pitching
           </Heading>
           <PitchingStatTable pitchingStats={pitchingStats} />
 
           {Object.keys(pitchingStats.postseasons).length > 0 && (
             <Box my={4}>
-              <Heading as="h2" size="md">
+              <Heading as="h3" size="md">
                 Postseason Pitching
               </Heading>
               <PitchingStatTable
@@ -171,14 +174,14 @@ function PlayerStats({
 
       {battingStats && !battingStatsError ? (
         <Box my={4}>
-          <Heading as="h2" size="md">
+          <Heading as="h3" size="md">
             Standard Batting
           </Heading>
           <BattingStatTable battingStats={battingStats} />
 
           {Object.keys(battingStats.postseasons).length > 0 && (
             <Box my={4}>
-              <Heading as="h2" size="md">
+              <Heading as="h3" size="md">
                 Postseason Batting
               </Heading>
               <BattingStatTable
